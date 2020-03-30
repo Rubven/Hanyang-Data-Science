@@ -1,2 +1,6 @@
-Programming Assignment 1 - APRIORI.pdf
-input.txt
+
+/Programming Assignment 1 - APRIORI.pdf
+/input.txt
+
+/project_apriori/*
+!/project_apriori/apriori.py
