@@ -2,9 +2,5 @@
 /Programming Assignment 1 - APRIORI.pdf
 /input.txt
 
-<<<<<<< HEAD
 /project_apriori/*
-=======
-/project_apriori/*/
->>>>>>> cd2dc4c4db048476d7c0b7ef0df0bea9e759fa42
 !/project_apriori/apriori.py
