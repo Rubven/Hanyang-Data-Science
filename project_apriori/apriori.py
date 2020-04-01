@@ -3,8 +3,8 @@ import re
 import multiprocessing
 import time
 
-#SETTINGS
-minimumSupport = 1
+#ARGS SETTINGS
+minimumSupportPosition = 1
 inputFilePosition = 2
 outputFilePosition = 3
 filePath = "../"
@@ -14,7 +14,7 @@ def map(items):
 
     itemMap = []
     for i in range(len(items)):
-        itemMap.append([items[i].lower(),1])
+        itemMap.append([int(items[i]),1])
     itemMap.sort()
     return itemMap
 
@@ -35,13 +35,12 @@ def reduce(mainDic, dic):
        
     for item in dic:
         if item not in mainDic:
-            mainDic[item] = []
-            mainDic[item].append(sum(dic[item]))
+            mainDic[item] = sum(dic[item])
+
         else:
             transaction_items = sum(dic[item])
-            mainDic_items = mainDic[item][0]
-            mainDic[item] = []
-            mainDic[item].append(transaction_items + mainDic_items)
+            mainDic_items = mainDic[item]
+            mainDic[item] = transaction_items + mainDic_items
     return mainDic
          
 def processTransaction(transaction):
@@ -72,6 +71,9 @@ def main():
     #Setting thread pool (takes machine's # of cores by default)
     pool = multiprocessing.Pool(1)
     
+    #Stores the minimum supports
+    minSupport = int(sys.argv[minimumSupportPosition])
+
     #Global dictionay contaning the frequent transactions
     mainDic = {}
    
@@ -91,11 +93,24 @@ def main():
     while (len(stack) > 0):
         mainDic = reduce(mainDic, stack.pop())
 
-    print("mainDic:\n")      
+        #SEARCH (K+1) FREQUENT TRANSACTIONS
+        #---------------TODO---------------
+
+    #CHECKS FREQUENCY OF ITEMS AND REMOVES THE ONE BELOW THE MINIMUM SUPPORT
+    mainDic = { item: frequency for item, frequency in mainDic.items() if frequency > minSupport}
+
+    print("\nmainDic:")      
     print (mainDic)   
 
-#time counter to show the execution time    
+   
 if __name__ == '__main__':
-   startTime = time.time()
-   main()
-   print("Execution time: %ss" % (time.time() - startTime))
+
+    #Check we have the correct number of arguments
+    if len(sys.argv) < 3:
+        print("\nLess than three arguments\nExiting\n")
+
+    #Time counter to show the execution time 
+    else:
+        startTime = time.time()
+        main()
+        print("\nExecution time: %ss\n" % (time.time() - startTime))
