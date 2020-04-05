@@ -6,7 +6,7 @@ import time
 minimumSupportPosition = 1
 inputFilePosition = 2
 outputFilePosition = 3
-filePath = "./"
+filePath = "../"
 
 
 #Read transaction file and return the transactions as collections of integers
@@ -57,11 +57,13 @@ def generate_1_itemset_candidates(transactions):
     return list(map(frozenset, candidates))
 
 
+#Gets different combinations of k+1 items, given frequent k-itemsets
 def generate_k_itemset_candidates(frequent_sets, k):
     
     candidate_k_itemsets = []
     lenFrequent_sets = len(frequent_sets)
 
+    #There's probably a more efficient method for doing this
     for i in range(lenFrequent_sets):
         for j in range(i+1, lenFrequent_sets):
             combinations1 = list(frequent_sets[i])[:k-2]
@@ -139,20 +141,19 @@ def apriori(transactions, minSup):
     return frequent_itemsets, itemsets_support
 
 
-#For all the itemsets in the frequent_itemsets list we search for possible association rules and calculate theis confidence
+#For all the itemsets in the frequent_itemsets list we search for possible association rules and calculate their confidence
 def get_association_rules(frequent_itemsets, itemsets_support):
     
     rules = []
     for i in range(1, len(frequent_itemsets)):
         #Get sets with 2 or more items
         for itemset in frequent_itemsets[i]:
-            
-            associative_item_sets = [set([item]) for item in itemset]   #change to frozenset if it needs to be used as index
+            #change to frozenset if it needs to be used as index
+            associative_item_sets = [set([item]) for item in itemset]   
 
             #Try to generate more association rules
             if (i > 1):
                 generate_more_rules(itemset, associative_item_sets, itemsets_support, rules)
-            
             else:
                 calculate_confidence(itemset, associative_item_sets, itemsets_support, rules)
 
@@ -202,6 +203,7 @@ if __name__ == '__main__':
         print("Minimum Support is not a percentage (Between 0-100)\nExiting\n")
         sys.exit()
 
+    
     #Triying to open Input files
     try:
         open(filePath + sys.argv[inputFilePosition])
