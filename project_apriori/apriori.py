@@ -6,7 +6,7 @@ import time
 minimumSupportPosition = 1
 inputFilePosition = 2
 outputFilePosition = 3
-filePath = "../"
+filePath = "./"
 
 
 #Read transaction file and return the transactions as collections of integers
