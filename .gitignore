@@ -1,2 +1,4 @@
 /project_1_apriori
-/project_2_decision_tree/.vscode
+/project_2_decision_tree
+!/project_2_decision_tree/*.py
+!/project_2_decision_tree/*.txt
