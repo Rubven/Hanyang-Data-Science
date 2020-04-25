@@ -1,4 +1,3 @@
-
 """
 PSEUDO-CODE from textbook:
 
@@ -24,3 +23,61 @@ PSEUDO-CODE from textbook:
 
 """
 
+"""
+PLAN:
+0 - Create Node class
+1 - Read DB
+2 - Identify different objects
+3 - Find best question (metric)
+4 - Split
+5 - Repeat
+
+"""
+
+import sys
+import time
+
+
+#Get header first, then read data and store in a list
+def readFile(input_file_name):
+    
+    attributes = []
+    data = []
+
+    with open(input_file_name, 'r') as f:  
+        attributes = f.readline().split()
+        for line in f.read().split('\n'):
+            if line != '':
+                data.append(line.split('\t'))
+
+    return attributes, data
+
+
+#Select all the different attribues in a specific column (to get)
+def get_unique_values(data, attribute_column):
+
+    return set([different_values[attribute_column] for different_values in data])
+    
+
+
+
+def main():
+    
+    #Read data
+    input_file = sys.argv[1]
+    
+    attributes, data = readFile(input_file)
+
+    #Get all the different values for each column
+    for i in range(len(attributes)):
+        print(attributes[i])
+        print(get_unique_values(data, i))
+        print('\n')
+
+
+if __name__ == '__main__':
+
+    #Setting timer to print execution time
+    startTime = time.time()
+    main()
+    print("\nExecution time: %ss\n" % (time.time() - startTime))
