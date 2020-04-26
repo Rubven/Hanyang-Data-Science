@@ -37,7 +37,21 @@ PLAN:
 import sys
 import time
 
+""" --- CLASSES --- """
+#Node that holds a dictionary with a label and the number of times it appears in the dataset
+class Leaf:
+    def __init__(self, data):
+        self.predictions = count_values(data)
 
+
+#Decision node. Has references to the best partition branch (bpb) and the other branch (leftovers)
+class Node:
+    def __init__(self, bpb, leftovers):
+        self.bpb = bpb
+        self.leftovers = leftovers
+        
+
+""" --- I/O FUNCTIONS --- """
 #Get header first, then read data and store in a list
 def readFile(input_file_name):
     
@@ -53,26 +67,50 @@ def readFile(input_file_name):
     return attributes, data
 
 
+""" --- ANALYZE DATA --- """
 #Select all the different attribues in a specific column (to get)
 def get_unique_values(data, attribute_column):
 
     return set([different_values[attribute_column] for different_values in data])
+
+
+#Count the number of each attribute in the given data
+def count_values(data):
     
+    count = {}
+    for row in data:
+        #the attribute we want to track is in the last position always
+        label = row[-1]
+        if label not in count:
+            count[label] = 0
+        count[label] += 1
+    return count
 
 
 
+
+
+
+
+
+
+""" --- MAIN --- """
 def main():
     
     #Read data
     input_file = sys.argv[1]
     
-    attributes, data = readFile(input_file)
+    labels, data = readFile(input_file)
+
+    dt = build_decision_tree(labels, data)
 
     #Get all the different values for each column
-    for i in range(len(attributes)):
-        print(attributes[i])
+    for i in range(len(labels)):
+        print(labels[i])
         print(get_unique_values(data, i))
         print('\n')
+    print('Count:')
+    print(count_values(data))
 
 
 if __name__ == '__main__':
