@@ -1,42 +1,7 @@
-"""
-PSEUDO-CODE from textbook:
-
-(1) create a node N;
-(2) if tuples in D are all of the same class, C, then
-(3)     return N as a leaf node labeled with the class C;
-(4) if attribute list is empty then
-(5)     return N as a leaf node labeled with the majority class in D; // majority voting
-(6) apply Attribute selection method(D, attribute list) to find the “best” splitting criterion;
-(7) label node N with splitting criterion;
-(8) if splitting attribute is discrete-valued and
-        multiway splits allowed then // not restricted to binary trees
-(9)     attribute list ← attribute list − splitting attribute; // remove splitting attribute
-(10) for each outcome j of splitting criterion
-        // partition the tuples and grow subtrees for each partition
-(11)    let Dj be the set of data tuples in D satisfying outcome j; // a partition
-(12)    if Dj is empty then
-(13)        attach a leaf labeled with the majority class in D to node N;
-(14)    else 
-            attach the node returned by Generate decision tree(Dj, attribute list) to node N;
-    endfor
-(15) return N;
-
-"""
-
-"""
-PLAN:
-0 - Create Node class
-1 - Read DB
-2 - Identify different objects
-3 - Find best question (metric)
-4 - Split
-5 - Repeat
-
-"""
-
 import sys
 import time
 import math
+
 
 """ --- CLASSES --- """
 # Node that holds a dictionary with a label and the number of times it appears in the dataset
@@ -78,6 +43,25 @@ def read_file(input_file_name):
                 data.append(line.split('\t'))
 
     return attributes, data
+
+
+def write_file(output_file_name, labels, test_data, results):
+
+    with open(output_file_name, 'w') as f:
+        
+        # Write labels
+        for column in range(len(labels)):
+            f.write(labels[column] + "\t")
+        f.write("\n")
+
+        # Write results
+        for row in range(len(test_data)):
+            test_data[row].append(results[row])
+            
+            for column in range(len(test_data[row])-1):
+                f.write(test_data[row][column] + "\t")
+            f.write(test_data[row][column +1] + "\n")
+            
 
 
 """ --- ANALYZE DATA --- """
@@ -188,12 +172,13 @@ def gini(data):
 def classify(data, node):
 
     if isinstance(node, Leaf):
-        return node.predictions
+        #return node.predictions
+        return max(node.predictions, key=node.predictions.get)
 
-        if node.attribute.compare(data):
-            return classify(data, node.best_partition_branch)
-        else:
-            return classify(data, node.other_branch)
+    if node.attribute.compare(data):
+        return classify(data, node.best_partition_branch)
+    else:
+        return classify(data, node.other_branch)
 
 
 """ --- MAIN --- """
@@ -202,13 +187,20 @@ def main():
     #Read data
     training_data_file = sys.argv[1]
     test_data_file = sys.argv[2]
+    result_file = sys.argv[3]
+    
     training_data_labels, training_data = read_file(training_data_file)
     test_data_labels, test_data = read_file(test_data_file)
 
+    # Create tree using training data
     dt = build_decision_tree(training_data)
 
+    # Get predictions for each row
+    results = []
+    for row in test_data:
+        results.append(classify(row, dt))
 
-
+    write_file(result_file, training_data_labels, test_data, results)
 
 
 if __name__ == '__main__':
