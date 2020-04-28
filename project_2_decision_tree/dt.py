@@ -1,10 +1,10 @@
 import sys
 import time
-import math
 
 
 """ --- CLASSES --- """
-# Node that holds a dictionary with a label and the number of times it appears in the dataset
+# Node that holds a dictionary with a label and the number of 
+# times it appears in the dataset
 class Leaf:
     def __init__(self, data):
         self.predictions = count_values(data)
@@ -33,8 +33,7 @@ class Attribute:
 # Get header first, then read data and store in a list
 def read_file(input_file_name):
     
-    attributes = []
-    data = []
+    attributes, data = [], []
 
     with open(input_file_name, 'r') as f:  
         attributes = f.readline().split()
@@ -91,7 +90,7 @@ def build_decision_tree(data):
     gain, attribute =  best_split(data)
 
     # 2) Divide into branches
-    # 2.1) If no information gained, return leaf
+    # 2.1) If no information gained, return Leaf
     if gain == 0:
         return Leaf(data)
 
@@ -106,8 +105,41 @@ def build_decision_tree(data):
     return Node(attribute, best_partition_branch, other_branch)
 
 
+# Find best split trying each attribute
+def best_split(data):
+
+    best_gain = 0
+    best_attribute = None
+    node_uncertainty = gini(data)
+    n_cols = len(data[0]) - 1
+
+    for column in range(n_cols):
+
+        values = set([value[column] for value in data])
+        for value in values:
+
+            attribute = Attribute(column, value)
+
+            # Attemp to partition data
+            best_split_rows, other_rows = divide(data, attribute)
+
+            # Check if it actually divided the data, else go next
+            if len(best_split_rows) == 0 or len(other_rows) == 0:
+                continue
+
+            # Calculate information gain with this split
+            gain = information_gain(best_split_rows, other_rows, node_uncertainty)
+
+            # Using >= instead of > increases the ammount of correct answers
+            if gain >= best_gain:
+                best_gain, best_attribute = gain, attribute
+    
+    return best_gain, best_attribute
+
+
 # Divide the data based on the value of an attribute
 def divide(data, attribute):
+    
     match_rows, other_rows = [], []
     for row in data:
         if attribute.compare(row):
@@ -115,38 +147,6 @@ def divide(data, attribute):
         else:
             other_rows.append(row)
     return match_rows, other_rows
-
-
-#Find best split trying to separate each attribute
-def best_split(data):
-
-    best_gain = 0
-    best_question = None
-    node_uncertainty = gini(data)
-    n_cols = len(data[0]) - 1
-
-    for column in range(n_cols):
-
-        values = set([value[column] for value in data])
-
-        for value in values:
-
-            attribute = Attribute(column, value)
-
-            #attemp to partition data
-            best_split_rows, other_rows = divide(data, attribute)
-
-            #Check if it actually divided the data
-            if len(best_split_rows) == 0 or len(other_rows) == 0:
-                continue
-
-            #Calculate information gain with this split
-            gain = information_gain(best_split_rows, other_rows, node_uncertainty)
-
-            if gain > best_gain:
-                best_gain, best_question = gain, attribute
-    
-    return best_gain, best_question
 
 
 # Calculate information gain using Gini Impurity (Gini Index)
@@ -171,6 +171,8 @@ def gini(data):
 
 def classify(data, node):
 
+    # Returns the key of the dictionary 
+    # (could return the whole dic, but we don't need the count anymore)
     if isinstance(node, Leaf):
         #return node.predictions
         return max(node.predictions, key=node.predictions.get)
@@ -184,7 +186,7 @@ def classify(data, node):
 """ --- MAIN --- """
 def main():
     
-    #Read data
+    # Read data and store labels
     training_data_file = sys.argv[1]
     test_data_file = sys.argv[2]
     result_file = sys.argv[3]
@@ -200,12 +202,13 @@ def main():
     for row in test_data:
         results.append(classify(row, dt))
 
+    # Write output file
     write_file(result_file, training_data_labels, test_data, results)
 
 
 if __name__ == '__main__':
 
-    #Setting timer to print execution time
+    # Setting timer to print execution time
     startTime = time.time()
     main()
     print("\nExecution time: %ss\n" % (time.time() - startTime))
