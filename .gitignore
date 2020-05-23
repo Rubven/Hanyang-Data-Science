@@ -1,4 +1,4 @@
 project_1_apriori
-project_2_decision_tree/*
-!project_2_decision_tree/*.py
-!project_2_decision_tree/*.txt
+project_2_decision_tree
+project_3_dbscan/*
+!project_3_dbscan/*.py
