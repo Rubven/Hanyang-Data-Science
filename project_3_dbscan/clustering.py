@@ -1,25 +1,22 @@
-"""
-1 - Read whole db
-2 - Select one object, see if its a core object
-    - If it is, set as cluster and look for more objects belonging to that cluster
-      by cheching all the neighbour objects (direct-density reachable) recursively 
-      until we find borders.
-3 - If object is not core, get next.
-4 - If no more objects are left in db, we're done.
-"""
-
 import sys
 import time
 import math
+
+# Global variable storing the data
+data = {}
+
+# Global variable storing the recursion limit (python's default is not enough to handle big dbs)
+recursion_limit = 500
 
 
 """ --- I/O FUNCTIONS --- """
 # Reads the file and stores the first value in each line as dictionary key (as an int)
 # Sets the following 2 values as float values for that key
 # Prepares the third value as an empty set, which will be filled with neighbours
+# Adds a fourth field, which will store to cluster it belongs to
 def read_file(input_data_file):
   
-  data = {}
+  global data
 
   with open(input_data_file, 'r') as f:
     for line in f.read().split('\n'):
@@ -27,13 +24,22 @@ def read_file(input_data_file):
         object_id, coord = line.split('\t', 1)
         data[int(object_id)] = [float(value) for value in coord.split()]
         data[int(object_id)].append(set())
+        data[int(object_id)].append(None)
 
-  return data
+
+# Sets recursion limit according to the db size
+def set_recursion_limit():
+  global data
+  global recursion_limit 
+
+  recursion_limit = len(data)
 
 
 """" --- ANALYZE DATA ---"""
 # Stores which points are within the minimum radius for each point
-def get_close_points(data, eps):
+def find_close_points(eps):
+
+  global data
 
   # Used to reduce the number of operations from 8000^8000 to 8000!
   last_visited_point = 0
@@ -54,8 +60,6 @@ def get_close_points(data, eps):
 
     last_visited_point += 1
 
-  return data
-
 
 # This function was used for clarity, but it slows the execution time a lot (double)
 """
@@ -75,16 +79,46 @@ def calculate_distance(point_1, point_2):
 """
 
 
-# Checks the number of close points for each point and gets neighbours recursively
-# until it finds borders. Then removes those points from the candidates list and
-# checks next point until all candidates have been assigned to a cluster.
-def get_clusters(data, min_pts, candidate_points):
-  clusters = []
-  
+# Starts clustering, starting from a random point
+def get_clusters(min_pts):
+
+  global data
+  cluster_labels = []
+  cluster_sets = []
+
+  # Initialize labels
+  label_id = 0
+  cluster_labels.append(label_id)
+
+  for point_id in range(len(data)):
+
+    if data[point_id][3] == None:
+      reachable_points = set()
+      cluster_sets.append(get_density_reachable_points(point_id, min_pts, reachable_points, label_id))
+      label_id += 1
+
+  return cluster_labels, cluster_sets
 
 
+# Returns all the density-reachable points from one point
+# Recursively looks for all direct-reachable points
+def get_density_reachable_points(point_id, min_pts, reachable_points, label_id):
 
-  return clusters
+  global data
+
+
+  # Each reachable point
+  for neighbour in data[point_id][2]:
+    if neighbour not in reachable_points:
+      # Add it to the set of reachable points in the cluster and label it
+      reachable_points.add(neighbour)
+      data[neighbour][3] = label_id
+      
+      # If it's core, repeat
+      if len(data[neighbour][2]) >= min_pts:
+        reachable_points.union(get_density_reachable_points(neighbour, min_pts, reachable_points, label_id))
+
+  return reachable_points
 
 
 def main():
@@ -95,16 +129,19 @@ def main():
   min_pts = int(sys.argv[4])
 
   # Dictionary with point_id as key, coordinates as values
-  data = read_file(input_data_file)
+  read_file(input_data_file)
+
+  # Set the new recursion limit according to the data size
+  set_recursion_limit()
 
   # Get close points for each point
-  data = get_close_points(data, eps)
+  find_close_points(eps)
 
-  # Get clusters
-  candidate_points = [int(point_id) for point_id in range(len(data))]
-  clusters = get_clusters(data, min_pts, candidate_points)
+  # Get clusters ???????????
+  cluster_labels, cluster_sets = get_clusters(min_pts)
 
-  print(data[0])
+  for cluster in cluster_sets:
+    print(cluster)
 
 
 if __name__ == '__main__':
