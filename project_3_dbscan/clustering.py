@@ -25,6 +25,7 @@ def read_file(input_data_file):
         data[int(object_id)].append(None)
 
 
+# Writes the largest N clusters to file (suggested optimization)
 def write_files(n_clusters, sorted_cluster_sets):
 
   input_file_name = sys.argv[1].replace('.txt','')
@@ -37,7 +38,6 @@ def write_files(n_clusters, sorted_cluster_sets):
         f.writelines(str(int(point)) + '\n')
 
 
-
 """ --- HELPER FUNCTIONS --- """
 # Sets recursion limit according to the db size
 def set_recursion_limit():
@@ -48,8 +48,6 @@ def set_recursion_limit():
 
 
 # Calculates pythagorean distance between two 2-dimensional points
-"""
-#Calculates Pythagorean distance
 def calculate_distance(point_1, point_2):
   x1 = point_1[0]
   y1 = point_1[1]
@@ -62,27 +60,23 @@ def calculate_distance(point_1, point_2):
   distance = math.sqrt(x**2 + y**2)
 
   return distance
-"""
-
 
 
 """" --- DBSCAN ALGORITHM ---"""
-# Stores which points are within the minimum radius for each point
+# Finds which points are within the minimum radius for each point
 def find_close_points(eps):
 
   global data
 
-  # Used to reduce the number of operations from 8000^8000 to 8000!
+  # Used to reduce the number of operations from n^n to n!
   last_visited_point = 0
   for point_id in range(len(data)):
     for candidate_point in range(last_visited_point, len(data)):
       
-      # If we don't know have the point already in the set, we check
+      # If we don't have the point already in the set, we check
       if candidate_point not in data[point_id][2]:  
 
-        # Function used for clarity, but it slows the execution time a lot (double)
-        # distance = calculate_distance(data[point_id][:2], data[candidate_point][:2])
-        distance = math.sqrt( ((data[candidate_point][0] - data[point_id][0])**2) + ((data[candidate_point][1]-data[point_id][1])**2))
+        distance = calculate_distance(data[point_id][:2], data[candidate_point][:2])
 
         # If the two points are within distance, updates both sets
         if distance <= eps:
@@ -101,8 +95,10 @@ def get_clusters(min_pts):
   # Initialize labels
   label_id = 0
 
+  # Check if point has been assigned to a cluster. If it's not, add it to
+  # current cluster and repeat process for nearby points. 
+  # When done, change cluster label and move to next unassigned point.
   for point_id in range(len(data)):
-
     if data[point_id][3] == None:
       reachable_points = set()
       cluster_sets.append(get_density_reachable_points(point_id, min_pts, reachable_points, label_id))
@@ -113,7 +109,7 @@ def get_clusters(min_pts):
 
 # Returns all the density-reachable points from one point
 # Recursively looks for all direct-reachable points
-def get_density_reachable_points(point_id, min_pts, reachable_points, label_id):
+def get_density_reachable_points(point_id, min_pts, reachable_points, label):
 
   global data
 
@@ -122,14 +118,13 @@ def get_density_reachable_points(point_id, min_pts, reachable_points, label_id):
     if neighbour not in reachable_points:
       # Add it to the set of reachable points in the cluster and label it
       reachable_points.add(neighbour)
-      data[neighbour][3] = label_id
+      data[neighbour][3] = label
       
       # If it's core, repeat
       if len(data[neighbour][2]) >= min_pts:
-        reachable_points.union(get_density_reachable_points(neighbour, min_pts, reachable_points, label_id))
+        reachable_points.union(get_density_reachable_points(neighbour, min_pts, reachable_points, label))
 
   return reachable_points
-
 
 
 def main():
@@ -146,6 +141,7 @@ def main():
   set_recursion_limit()
 
   # Get close points for each point
+  print("Clustering...")
   find_close_points(eps)
 
   # Get clusters
@@ -153,6 +149,7 @@ def main():
 
   # Sort clusters in descending length order (larger ones first)
   sorted_cluster_sets = sorted(cluster_sets, reverse=True,  key=len)
+  print("Completed")
 
   # Print the N first clusters
   write_files(n_clusters, sorted_cluster_sets)
