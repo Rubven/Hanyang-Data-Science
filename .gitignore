@@ -1,4 +1,6 @@
 project_1_apriori
 project_2_decision_tree
-project_3_dbscan/*
-!project_3_dbscan/*.py
+project_3_dbscan
+project_4_recommender/
+!project_4_recommender/*.py
+!project_4_recommender/Report.*
