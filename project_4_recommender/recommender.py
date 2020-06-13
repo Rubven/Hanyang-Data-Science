@@ -19,13 +19,14 @@ def read_file(input_data_file, data):
 
 
 # Generate output files and write the results
-def write_file(input_file_name, final_recommendations):
+# Output format: [user_id]\t[item_id]\t[rating]\n
+def write_file(input_file_name, final_ratings):
 
 	output_file_name = input_file_name + '_prediction.txt'
 	with open(output_file_name, 'w') as f:
-		for user in final_recommendations:
-			for item in final_recommendations[user].keys():
-				f.writelines(str(user) +'\t' + str(item) +'\t' + str(final_recommendations[user][item]) +'\n')
+		for user in final_ratings:
+			for item in final_ratings[user].keys():
+				f.writelines(str(user) +'\t' + str(item) +'\t' + str(final_ratings[user][item]) +'\n')
 
 
 """ --- CF FUNCTIONS --- """
@@ -88,7 +89,7 @@ def get_recommendations(target_user, user_id, training_data):
 						if item not in target_user or target_user[item] == 0:
 							recommendations[item] = 0
 							recommendations[item] += training_data[training_user_id][item] * PCC
-	
+
 	return recommendations
 
 
@@ -107,7 +108,6 @@ def main():
 	read_file(training_data_file_name, training_data)
 	read_file(test_data_file_name, test_data)
 
-
 	# Recommendations using Collaborative Filtering
 	print("Calculating")
 	for user_id in test_data:
@@ -125,7 +125,6 @@ def main():
 	# Generate output file
 	print("Writing output file")
 	write_file(training_data_file_name, final_ratings)
-
 	print("Done")
 
 
@@ -134,4 +133,4 @@ if __name__ == '__main__':
 
 	startTime = time.time()
 	main()
-	print("\nExecution time: %ss\n" % (time.time() - startTime))
+	print("\nExecution time: " +str(round((time.time() - startTime), 4)) +"s\n")
